@@ -1,0 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+	/* Mała etykieta nad nagłówkiem sekcji */
+	.lb-eyebrow {
+		@apply text-[10px] uppercase tracking-[0.4em] text-lb-champagne;
+	}
+
+	/* Główny przycisk (ostre krawędzie, art-deco) */
+	.btn-luxe {
+		@apply inline-flex items-center justify-center gap-2 px-10 py-4 bg-lb-dark text-lb-cream text-xs uppercase tracking-[0.3em] font-semibold transition-all duration-300 hover:bg-lb-champagne;
+	}
+
+	.btn-luxe-outline {
+		@apply inline-flex items-center justify-center gap-3 px-10 py-4 border border-lb-champagne/40 text-lb-dark text-xs uppercase tracking-[0.25em] font-semibold transition-all duration-300 hover:bg-lb-champagne hover:text-white;
+	}
+}
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+html {
+	scroll-behavior: smooth;
+}
+
+body {
+	background-color: #faf6f0;
+	color: #4a4038;
+	font-family: 'Montserrat', system-ui, sans-serif;
+	line-height: 1.7;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+/* Ozdobny romb art-deco — używany jako separator */
+.lb-diamond {
+	width: 8px;
+	height: 8px;
+	background: #c4a96d;
+	transform: rotate(45deg);
+	flex-shrink: 0;
+}
+
+::-webkit-scrollbar {
+	width: 9px;
+}
+
+::-webkit-scrollbar-track {
+	background: #faf6f0;
+}
+
+::-webkit-scrollbar-thumb {
+	background: #c4a96d;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: #312a22;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+	transition: all 0.3s ease;
+}
+
+::selection {
+	background-color: #c4a96d;
+	color: #ffffff;
+}
+
+:focus-visible {
+	outline: 2px solid #c4a96d;
+	outline-offset: 3px;
+}

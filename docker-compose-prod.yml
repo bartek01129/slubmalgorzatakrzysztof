@@ -1,0 +1,52 @@
+services:
+  backend:
+    image: ${DOCKER_USERNAME}/bartek:slubmalgorzatakrzysztof-backend
+    container_name: slubmalgorzatakrzysztof-backend
+    restart: unless-stopped
+    environment:
+      - PORT=3001
+      # ⬇️ ZMIEŃ na docelową domenę pary
+      - FRONTEND_URL=https://slubmalgorzatakrzysztof.pl
+      - DB_URL=${DB_URL}
+    networks:
+      - web
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.mk-api.rule=Host(`slubmalgorzatakrzysztof.pl`) && PathPrefix(`/api`)'
+      - 'traefik.http.routers.mk-api.entrypoints=websecure'
+      - 'traefik.http.routers.mk-api.tls.certresolver=my-resolver'
+      - 'traefik.http.routers.mk-api.priority=20'
+      - 'traefik.http.routers.mk-api.service=mk-api'
+      - 'traefik.http.services.mk-api.loadbalancer.server.port=3001'
+
+  frontend:
+    image: ${DOCKER_USERNAME}/bartek:slubmalgorzatakrzysztof-frontend
+    container_name: slubmalgorzatakrzysztof-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - web
+    labels:
+      - 'traefik.enable=true'
+
+      - "traefik.http.middlewares.mk-www-redirect.redirectregex.regex=^https?://www\\.(.*)"
+      - 'traefik.http.middlewares.mk-www-redirect.redirectregex.replacement=https://$${1}'
+
+      - 'traefik.http.routers.www-mk-redirect.rule=Host(`www.slubmalgorzatakrzysztof.pl`)'
+      - 'traefik.http.routers.www-mk-redirect.entrypoints=websecure'
+      - 'traefik.http.routers.www-mk-redirect.tls.certresolver=my-resolver'
+      - 'traefik.http.routers.www-mk-redirect.middlewares=mk-www-redirect'
+
+      - 'traefik.http.routers.mk.rule=Host(`slubmalgorzatakrzysztof.pl`)'
+      - 'traefik.http.routers.mk.entrypoints=websecure'
+      - 'traefik.http.routers.mk.tls=true'
+      - 'traefik.http.routers.mk.tls.certresolver=my-resolver'
+      - 'traefik.http.routers.mk.priority=10'
+      - 'traefik.http.routers.mk.service=mk'
+      - 'traefik.http.services.mk.loadbalancer.server.port=3000'
+
+networks:
+  web:
+    external: true
+    name: traefik_proxy_network

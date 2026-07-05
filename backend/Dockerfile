@@ -1,0 +1,13 @@
+FROM node:22-alpine
+
+WORKDIR /app/slubmalgorzatakrzysztof-backend
+
+COPY package*.json ./
+
+RUN npm ci --production --silent
+
+COPY . .
+
+EXPOSE 3001
+
+CMD ["node", "server.js"]
