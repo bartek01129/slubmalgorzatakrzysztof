@@ -30,7 +30,7 @@ function GalleryCTA() {
 					<span className='h-px w-10 bg-lb-champagne/40' />
 				</div>
 				<p className='text-lb-text/60 font-light mb-7'>
-					Podzielcie się z nami swoimi ujęciami z obu dni — stwórzmy wspólną
+					Podzielcie się z nami swoimi ujęciami z obu dni. Stwórzmy wspólną
 					galerię wspomnień.
 				</p>
 				<Link

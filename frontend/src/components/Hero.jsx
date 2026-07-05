@@ -51,22 +51,6 @@ export default function Hero() {
 			{/* Warstwa 3 — delikatna tekstura art-deco */}
 			<div className='absolute inset-0' style={decoWeaveStyle(0.05)} />
 
-			{/* Unoszące się kontury rombów */}
-			<motion.div
-				className='absolute left-[8%] top-[22%] hidden md:block'
-				animate={{ y: [0, -18, 0], rotate: [45, 45, 45] }}
-				transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
-			>
-				<span className='block w-24 h-24 border border-lb-champagne/20 rotate-45' />
-			</motion.div>
-			<motion.div
-				className='absolute right-[10%] bottom-[18%] hidden md:block'
-				animate={{ y: [0, 16, 0] }}
-				transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut' }}
-			>
-				<span className='block w-16 h-16 border border-lb-champagne/15 rotate-45' />
-			</motion.div>
-
 			{/* Cyzelowana ramka zaproszenia */}
 			<div className='absolute inset-4 sm:inset-6 md:inset-9 border border-white/12 pointer-events-none'>
 				<CornerMark className='top-[-1px] left-[-1px] border-t border-l' />

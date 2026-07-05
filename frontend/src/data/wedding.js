@@ -103,7 +103,7 @@ export const dressCodes = [
 		day: 'Dzień I · Ślub',
 		title: 'Modern Bond Elegance',
 		intro:
-			'Inspiracją jest klasyczna elegancja w stylu Jamesa Bonda — ponadczasowy szyk i wieczorowy sznyt.',
+			'Inspiracją jest klasyczna elegancja w stylu Jamesa Bonda - ponadczasowy szyk i wieczorowy sznyt.',
 		lines: [
 			{
 				label: 'Panowie',
@@ -121,7 +121,7 @@ export const dressCodes = [
 		day: 'Dzień II · Poprawiny',
 		title: 'Boho nad basenem',
 		intro:
-			'Luźniejszy, słoneczny klimat — impreza toczy się przy basenie, więc postawcie na swobodę i wygodę.',
+			'Luźniejszy, słoneczny klimat - impreza toczy się przy basenie, więc postawcie na swobodę i wygodę.',
 		lines: [
 			{
 				label: 'Styl',
@@ -139,7 +139,7 @@ export const dressCodes = [
 // ——— TEKSTY ———
 export const texts = {
 	welcome:
-		'Z ogromną radością zapraszamy Was do wspólnego świętowania naszego ślubu — na słonecznej Teneryfie, wśród oceanu, palm i zachwycających zachodów słońca. Na tej stronie znajdziecie wszystko, co najważniejsze: harmonogram obu dni, informacje o transferach, dress code oraz miejsce ceremonii.',
+		'Z ogromną radością zapraszamy Was do wspólnego świętowania naszego ślubu  na słonecznej Teneryfie, wśród oceanu, palm i zachwycających zachodów słońca. Na tej stronie znajdziecie wszystko, co najważniejsze: harmonogram obu dni, informacje o transferach, dress code oraz miejsce ceremonii.',
 	gifts:
 		'Największym prezentem będzie Wasza obecność w tym wyjątkowym dniu. Jeśli jednak chcielibyście obdarować nas upominkiem, zamiast kwiatów i prezentów prosimy o cegiełkę na spełnienie naszego marzenia o podróży poślubnej.',
 	thanks:
