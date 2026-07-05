@@ -19,7 +19,7 @@ export const dates = {
 };
 
 export const place = {
-	region: 'Adeje · Teneryfa',
+	region: 'Adeje',
 	country: 'Hiszpania',
 };
 
@@ -40,10 +40,23 @@ export const timelineWedding = [
 ];
 
 export const timelineAfterParty = [
-	{ time: '15:00', title: 'Autobus odbiera gości z hotelu i przewozi do willi', isTransfer: true },
-	{ time: '15:30', title: 'Rozpoczęcie poprawin', note: 'relaks przy basenie, muzyka, jedzenie i napoje', highlight: true },
+	{
+		time: '15:00',
+		title: 'Autobus odbiera gości z hotelu i przewozi do willi',
+		isTransfer: true,
+	},
+	{
+		time: '15:30',
+		title: 'Rozpoczęcie poprawin',
+		note: 'relaks przy basenie, muzyka, jedzenie i napoje',
+		highlight: true,
+	},
 	{ time: '15:30', title: 'Impreza', note: 'do 23:00' },
-	{ time: '23:00', title: 'Zakończenie poprawin · autobus powrotny do hotelu', isTransfer: true },
+	{
+		time: '23:00',
+		title: 'Zakończenie poprawin · autobus powrotny do hotelu',
+		isTransfer: true,
+	},
 ];
 
 // ——— MIEJSCA ———
@@ -53,8 +66,10 @@ const embed = (q) =>
 const search = (q) =>
 	`https://www.google.com/maps/search/?api=1&query=${encode(q)}`;
 
-const ceremonyQuery = 'Calle Roque Nublo 1, 38660 Adeje, Santa Cruz de Tenerife, Hiszpania';
-const afterQuery = 'Calle El Horno 17, 38678 Playa Paraíso, Adeje, Santa Cruz de Tenerife, Hiszpania';
+const ceremonyQuery =
+	'Calle Roque Nublo 1, 38660 Adeje, Santa Cruz de Tenerife, Hiszpania';
+const afterQuery =
+	'Calle El Horno 17, 38678 Playa Paraíso, Adeje, Santa Cruz de Tenerife, Hiszpania';
 
 export const locations = [
 	{
@@ -90,7 +105,10 @@ export const dressCodes = [
 		intro:
 			'Inspiracją jest klasyczna elegancja w stylu Jamesa Bonda — ponadczasowy szyk i wieczorowy sznyt.',
 		lines: [
-			{ label: 'Panowie', text: 'Smokingi oraz ciemne, dobrze skrojone garnitury.' },
+			{
+				label: 'Panowie',
+				text: 'Smokingi oraz ciemne, dobrze skrojone garnitury.',
+			},
 			{
 				label: 'Panie',
 				text: 'Jasne, eleganckie suknie wieczorowe w odcieniach champagne, beżu, pudrowego różu, srebra i pastelach.',
@@ -105,8 +123,14 @@ export const dressCodes = [
 		intro:
 			'Luźniejszy, słoneczny klimat — impreza toczy się przy basenie, więc postawcie na swobodę i wygodę.',
 		lines: [
-			{ label: 'Styl', text: 'Boho: przewiewne tkaniny, naturalne tony, lekkość i komfort.' },
-			{ label: 'Pamiętajcie', text: 'Zabierzcie stroje kąpielowe — basen czeka!' },
+			{
+				label: 'Styl',
+				text: 'Boho: przewiewne tkaniny, naturalne tony, lekkość i komfort.',
+			},
+			{
+				label: 'Pamiętajcie',
+				text: 'Zabierzcie stroje kąpielowe — basen czeka!',
+			},
 		],
 		palette: ['#EBE0CE', '#D8C4A0', '#B9A17A', '#8C9B86', '#6E5A43'],
 	},

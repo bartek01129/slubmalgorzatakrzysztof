@@ -104,12 +104,12 @@ export default function Agenda() {
 				</motion.div>
 
 				{/* Przełącznik dni */}
-				<div className="flex justify-center gap-2 mb-12">
+				<div className="flex flex-col sm:flex-row justify-center gap-2 mb-12 max-w-xs sm:max-w-none mx-auto">
 					{days.map((d) => (
 						<button
 							key={d.key}
 							onClick={() => setActive(d.key)}
-							className={`px-5 md:px-7 py-3 text-[10px] md:text-xs uppercase tracking-[0.25em] font-semibold transition-all duration-300 border ${
+							className={`w-full sm:w-auto px-5 md:px-7 py-3 text-[10px] md:text-xs uppercase tracking-[0.2em] sm:tracking-[0.25em] font-semibold transition-all duration-300 border ${
 								active === d.key
 									? 'bg-lb-champagne text-lb-dark border-lb-champagne'
 									: 'text-lb-cream/60 border-lb-champagne/20 hover:border-lb-champagne/50 hover:text-lb-cream'

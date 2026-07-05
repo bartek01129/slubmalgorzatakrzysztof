@@ -5,8 +5,8 @@ import { ceremonyISO } from '../data/wedding';
 
 function TimeUnit({ value, label }) {
 	return (
-		<div className="flex flex-col items-center px-4 sm:px-7">
-			<div className="text-3xl md:text-5xl font-serif italic text-lb-dark tabular-nums">
+		<div className="flex flex-col items-center px-2.5 sm:px-7">
+			<div className="text-[2rem] sm:text-4xl md:text-5xl font-serif italic text-lb-dark tabular-nums">
 				{String(value).padStart(2, '0')}
 			</div>
 			<div className="h-px w-8 bg-lb-champagne/40 my-2.5" />

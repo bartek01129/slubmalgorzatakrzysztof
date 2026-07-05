@@ -47,20 +47,18 @@ body {
 	flex-shrink: 0;
 }
 
-::-webkit-scrollbar {
-	width: 9px;
+/* Ukryty pasek przewijania (strona nadal się przewija) */
+html {
+	scrollbar-width: none; /* Firefox */
+	-ms-overflow-style: none; /* stary Edge/IE */
 }
 
-::-webkit-scrollbar-track {
-	background: #faf6f0;
-}
-
-::-webkit-scrollbar-thumb {
-	background: #c4a96d;
-}
-
-::-webkit-scrollbar-thumb:hover {
-	background: #312a22;
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+	width: 0;
+	height: 0;
+	display: none; /* Chrome, Safari, nowy Edge */
 }
 
 button,

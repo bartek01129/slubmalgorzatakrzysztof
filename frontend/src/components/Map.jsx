@@ -54,7 +54,7 @@ export default function Map() {
 								className="bg-white p-6 shadow-lb-softer"
 								style={{ borderLeft: '3px solid #C4A96D' }}
 							>
-								<div className="flex items-start justify-between gap-4">
+								<div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
 									<div>
 										<p className="text-lb-text font-medium mb-1">{loc.address}</p>
 										<p className="text-[10px] uppercase tracking-[0.2em] text-lb-champagne mt-2">
@@ -65,7 +65,7 @@ export default function Map() {
 										href={loc.mapsUrl}
 										target="_blank"
 										rel="noopener noreferrer"
-										className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-lb-dark text-lb-cream text-xs font-semibold uppercase tracking-[0.12em] hover:bg-lb-champagne transition-all shadow-lb-soft whitespace-nowrap"
+										className="flex-shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-lb-dark text-lb-cream text-xs font-semibold uppercase tracking-[0.12em] hover:bg-lb-champagne transition-all shadow-lb-soft whitespace-nowrap"
 									>
 										<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
 											<path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
