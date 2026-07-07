@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
 	BrowserRouter as Router,
 	Routes,
@@ -10,6 +11,7 @@ import Hero from './components/Hero';
 import Countdown from './components/Countdown';
 import Welcome from './components/Welcome';
 import Agenda from './components/Agenda';
+import Flights from './components/Flights';
 import DressCode from './components/DressCode';
 import Map from './components/Map';
 import Gifts from './components/Gifts';
@@ -82,6 +84,7 @@ export default function App() {
 									<Countdown />
 									<Welcome />
 									<GalleryCTA />
+									<Flights />
 									<Agenda />
 									<DressCode />
 									<Map />
@@ -113,36 +116,68 @@ export default function App() {
 	);
 }
 
+// Płynne przewijanie do góry z easingiem (naturalne, bez „przeskoku").
+function smoothScrollToTop() {
+	const startY = window.scrollY || document.documentElement.scrollTop;
+	if (startY <= 0) return;
+
+	const duration = Math.min(1400, 500 + startY * 0.25);
+	const startTime = performance.now();
+	const easeInOutCubic = (t) =>
+		t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+	const step = (now) => {
+		const t = Math.min((now - startTime) / duration, 1);
+		const y = startY * (1 - easeInOutCubic(t));
+		// scrollTop wprost — omija CSS scroll-behavior:smooth,
+		// więc ruchem steruje wyłącznie ta pętla (bez „teleportu”).
+		document.documentElement.scrollTop = y;
+		document.body.scrollTop = y;
+		if (t < 1) requestAnimationFrame(step);
+	};
+	requestAnimationFrame(step);
+}
+
 function ScrollToTopButton() {
 	const [isVisible, setIsVisible] = useState(false);
 
 	useEffect(() => {
 		const toggle = () => setIsVisible(window.pageYOffset > 300);
-		window.addEventListener('scroll', toggle);
+		window.addEventListener('scroll', toggle, { passive: true });
 		return () => window.removeEventListener('scroll', toggle);
 	}, []);
 
-	if (!isVisible) return null;
-
 	return (
-		<button
-			onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-			className='fixed bottom-8 right-8 z-50 w-12 h-12 flex items-center justify-center bg-lb-dark text-lb-cream shadow-lb-elegant hover:bg-lb-champagne transition-all duration-300'
-			title='Powrót do góry'
-		>
-			<svg
-				className='w-5 h-5'
-				fill='none'
-				stroke='currentColor'
-				viewBox='0 0 24 24'
-			>
-				<path
-					strokeLinecap='round'
-					strokeLinejoin='round'
-					strokeWidth={1.5}
-					d='M5 15l7-7 7 7'
-				/>
-			</svg>
-		</button>
+		<AnimatePresence>
+			{isVisible && (
+				<motion.button
+					key='scrolltop'
+					onClick={smoothScrollToTop}
+					initial={{ opacity: 0, scale: 0.6, y: 12 }}
+					animate={{ opacity: 1, scale: 1, y: 0 }}
+					exit={{ opacity: 0, scale: 0.6, y: 12 }}
+					transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+					whileHover={{ scale: 1.08 }}
+					whileTap={{ scale: 0.92 }}
+					className='fixed bottom-8 right-8 z-50 w-12 h-12 flex items-center justify-center bg-lb-dark text-lb-cream shadow-lb-elegant hover:bg-lb-champagne transition-colors duration-300'
+					title='Powrót do góry'
+					aria-label='Powrót do góry'
+				>
+					<svg
+						className='w-5 h-5'
+						fill='none'
+						stroke='currentColor'
+						viewBox='0 0 24 24'
+					>
+						<path
+							strokeLinecap='round'
+							strokeLinejoin='round'
+							strokeWidth={1.5}
+							d='M5 15l7-7 7 7'
+						/>
+					</svg>
+				</motion.button>
+			)}
+		</AnimatePresence>
 	);
 }

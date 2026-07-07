@@ -59,6 +59,31 @@ export const timelineAfterParty = [
 	},
 ];
 
+// ——— PRZELOTY ———
+export const flights = [
+	{
+		key: 'outbound',
+		label: 'Wylot',
+		date: '15 Października 2026',
+		weekday: 'Czwartek',
+		from: { city: 'Warszawa', time: '09:55' },
+		to: { city: 'Teneryfa', time: '15:25' },
+		details: [
+			{ label: 'Wyjazd z Elbląga', value: '03:15' },
+			{ label: 'Odprawa na lotnisku', value: 'od 07:55' },
+		],
+	},
+	{
+		key: 'return',
+		label: 'Powrót',
+		date: '22 Października 2026',
+		weekday: 'Czwartek',
+		from: { city: 'Teneryfa', time: '15:30' },
+		to: { city: 'Warszawa', time: '22:30' },
+		details: [{ label: 'Wyjazd z lotniska Okęcie', value: 'ok. 23:30' }],
+	},
+];
+
 // ——— MIEJSCA ———
 const encode = (q) => encodeURIComponent(q);
 const embed = (q) =>
@@ -139,7 +164,7 @@ export const dressCodes = [
 // ——— TEKSTY ———
 export const texts = {
 	welcome:
-		'Z ogromną radością zapraszamy Was do wspólnego świętowania naszego ślubu  na słonecznej Teneryfie, wśród oceanu, palm i zachwycających zachodów słońca. Na tej stronie znajdziecie wszystko, co najważniejsze: harmonogram obu dni, informacje o transferach, dress code oraz miejsce ceremonii.',
+		'Z ogromną radością zapraszamy Was do wspólnego świętowania naszego ślubu  na słonecznej Teneryfie, wśród oceanu, palm i zachwycających zachodów słońca. Na tej stronie znajdziecie wszystko, co najważniejsze: harmonogram obu dni, przeloty i transfery, dress code oraz miejsce ceremonii.',
 	gifts:
 		'Największym prezentem będzie Wasza obecność w tym wyjątkowym dniu. Jeśli jednak chcielibyście obdarować nas upominkiem, zamiast kwiatów i prezentów prosimy o cegiełkę na spełnienie naszego marzenia o podróży poślubnej.',
 	thanks:
