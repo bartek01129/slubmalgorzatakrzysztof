@@ -7,7 +7,10 @@ services:
       - PORT=3001
       # ⬇️ ZMIEŃ na docelową domenę pary
       - FRONTEND_URL=https://slubmalgorzatakrzysztof.pl
-      - DB_URL=${DB_URL}
+      - GALLERY_TAG=mk2026
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
     networks:
       - web
     labels:

@@ -56,8 +56,11 @@ export default function Map() {
 							>
 								<div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
 									<div>
-										<p className="text-lb-text font-medium mb-1">{loc.address}</p>
-										<p className="text-[10px] uppercase tracking-[0.2em] text-lb-champagne mt-2">
+										<p className="font-serif text-lg sm:text-xl text-lb-dark leading-snug">
+											{loc.venue}
+										</p>
+										<p className="text-sm text-lb-text/70 mt-1">{loc.address}</p>
+										<p className="text-[10px] uppercase tracking-[0.2em] text-lb-champagne mt-3">
 											{loc.time}
 										</p>
 									</div>

@@ -92,15 +92,16 @@ const search = (q) =>
 	`https://www.google.com/maps/search/?api=1&query=${encode(q)}`;
 
 const ceremonyQuery =
-	'Calle Roque Nublo 1, 38660 Adeje, Santa Cruz de Tenerife, Hiszpania';
+	'Hotel Vincci Selección La Plantación del Sur, Calle Roque Nublo 1, 38660 Adeje, Santa Cruz de Tenerife, Hiszpania';
 const afterQuery =
-	'Calle El Horno 17, 38678 Playa Paraíso, Adeje, Santa Cruz de Tenerife, Hiszpania';
+	'Finca BIO, Calle El Horno 17, 38678 Playa Paraíso, Adeje, Santa Cruz de Tenerife, Hiszpania';
 
 export const locations = [
 	{
 		key: 'ceremony',
 		label: 'Dzień I · Ślub',
 		title: 'Ceremonia i Wesele',
+		venue: 'Hotel Vincci Selección La Plantación del Sur',
 		address: 'Calle Roque Nublo 1, 38660 Adeje',
 		time: 'Ceremonia · 17:00, 19 października',
 		embedSrc: embed(ceremonyQuery),
@@ -112,6 +113,7 @@ export const locations = [
 		key: 'afterparty',
 		label: 'Dzień II · Poprawiny',
 		title: 'Poprawiny przy basenie',
+		venue: 'Finca BIO',
 		address: 'Calle El Horno 17, 38678 Playa Paraíso, Adeje',
 		time: 'Start · 15:30, 20 października',
 		embedSrc: embed(afterQuery),
