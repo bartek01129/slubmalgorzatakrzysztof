@@ -75,14 +75,16 @@ export default function Hero() {
 			/>
 			{/* Warstwa 3 — diamentowa tekstura art-deco.
 			    Maska: niewidoczna u góry, płynnie pojawia się (opacity 0 → 100)
-			    od ~połowy ekranu (okolice daty) w dół. */}
+			    od złotego separatora pod imionami (~53%) w dół.
+			    Obie linie maski MUSZĄ być identyczne (Webkit = Safari, maskImage = reszta). */}
 			<div
 				className='absolute inset-0'
 				style={{
 					...decoWeaveStyle(0.05),
 					WebkitMaskImage:
-						'linear-gradient(to bottom, transparent 53%, black 15%)',
-					maskImage: 'linear-gradient(to bottom, transparent 53%, black 95%)',
+						'linear-gradient(to bottom, transparent 51%, black 68%)',
+					maskImage:
+						'linear-gradient(to bottom, transparent 51%, black 68%)',
 				}}
 			/>
 
