@@ -42,7 +42,7 @@ export default function Hero() {
 					src={heroCouple}
 					alt=''
 					aria-hidden='true'
-					className='w-full h-full object-cover object-[40%_30%] md:object-[80%_20%]'
+					className='w-full h-full object-cover object-[40%_30%] md:object-[50%_12%]'
 					style={{
 						filter: 'blur(1px)',
 						transform: 'scale(1.1)',
@@ -81,8 +81,26 @@ export default function Hero() {
 				style={{
 					...decoWeaveStyle(0.05),
 					WebkitMaskImage:
-						'linear-gradient(to bottom, transparent 48%, black 95%)',
-					maskImage: 'linear-gradient(to bottom, transparent 48%, black 95%)',
+						'linear-gradient(to bottom, transparent 53%, black 15%)',
+					maskImage: 'linear-gradient(to bottom, transparent 53%, black 95%)',
+				}}
+			/>
+
+			{/* Desktop — kinowa winieta boczna: kadruje twarze, przygasza puste brzegi.
+			    hidden na mobile → telefon zostaje bez zmian. */}
+			<div
+				className='absolute inset-0 hidden md:block pointer-events-none'
+				style={{
+					background:
+						'linear-gradient(90deg, rgba(18,13,9,0.72) 0%, rgba(18,13,9,0.18) 16%, transparent 33%, transparent 67%, rgba(18,13,9,0.18) 84%, rgba(18,13,9,0.72) 100%)',
+				}}
+			/>
+			{/* Desktop — głębsza podstawa pod datą i przyciskami */}
+			<div
+				className='absolute inset-0 hidden md:block pointer-events-none'
+				style={{
+					background:
+						'linear-gradient(180deg, transparent 55%, rgba(26,20,15,0.55) 100%)',
 				}}
 			/>
 
