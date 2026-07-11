@@ -83,8 +83,7 @@ export default function Hero() {
 					...decoWeaveStyle(0.05),
 					WebkitMaskImage:
 						'linear-gradient(to bottom, transparent 51%, black 68%)',
-					maskImage:
-						'linear-gradient(to bottom, transparent 51%, black 68%)',
+					maskImage: 'linear-gradient(to bottom, transparent 51%, black 68%)',
 				}}
 			/>
 
