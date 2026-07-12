@@ -4,9 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'backend/server.js'
-      - 'backend/package.json'
-      - 'backend/Dockerfile'
+      - 'backend/**'
       - 'frontend/src/**'
       - 'frontend/index.html'
       - 'frontend/package.json'
@@ -29,9 +27,7 @@ jobs:
         with:
           filters: |
             backend:
-              - 'backend/server.js'
-              - 'backend/package.json'
-              - 'backend/Dockerfile'
+              - 'backend/**'
             frontend:
               - 'frontend/src/**'
               - 'frontend/index.html'
@@ -104,9 +100,6 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/bartek:slubmalgorzatakrzysztof-frontend
           build-args: |
             VITE_PASSWORD=${{ secrets.VITE_PASSWORD }}
-            VITE_CLOUDINARY_CLOUD_NAME=${{ secrets.VITE_CLOUDINARY_CLOUD_NAME }}
-            VITE_CLOUDINARY_UPLOAD_PRESET=${{ secrets.VITE_CLOUDINARY_UPLOAD_PRESET }}
-            VITE_GALLERY_TAG=${{ secrets.VITE_GALLERY_TAG }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -144,9 +137,9 @@ jobs:
             cd /home/${{ secrets.VPS_USERNAME }}/slubmalgorzatakrzysztof
 
             export DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME }}"
-            export CLOUDINARY_CLOUD_NAME="${{ secrets.CLOUDINARY_CLOUD_NAME }}"
-            export CLOUDINARY_API_KEY="${{ secrets.CLOUDINARY_API_KEY }}"
-            export CLOUDINARY_API_SECRET="${{ secrets.CLOUDINARY_API_SECRET }}"
+            export ADMIN_TOKEN="${{ secrets.ADMIN_TOKEN }}"
+
+            mkdir -p photos-data
 
             docker pull ${{ secrets.DOCKER_USERNAME }}/bartek:slubmalgorzatakrzysztof-backend
             docker pull ${{ secrets.DOCKER_USERNAME }}/bartek:slubmalgorzatakrzysztof-frontend

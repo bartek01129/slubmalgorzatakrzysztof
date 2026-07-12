@@ -3,20 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Diamond } from '../Ornaments';
 
-const CLOUD = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-const PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-const GALLERY_TAG = import.meta.env.VITE_GALLERY_TAG || 'mk2026';
 const API_URL = '/api/photos';
-const MAX_BYTES = 15 * 1024 * 1024; // 15 MB — musi ≤ limitowi w presecie Cloudinary
+const MAX_BYTES = 15 * 1024 * 1024; // 15 MB — musi ≤ limitowi w backendzie
 const PAGE_SIZE = 40; // ile kafelków renderujemy na raz (reszta doładowuje się na scroll)
+const OPTIMISTIC_WINDOW_MS = 60_000; // ile trzymamy optymistyczny wpis, zanim poll go zobaczy
 
-// Miniatura / pełny obraz — ZAWSZE przez f_auto (naprawia HEIC z iPhone).
-const thumb = (url) =>
-	url.replace('/upload/', '/upload/w_400,h_533,c_fill,g_auto,q_auto:eco,f_auto/');
-// Lightbox: cap w_1600,c_limit — tylko podgląd, oszczędza transfer i NIE rusza
-// bazy w Cloudinary (pełny oryginał pobiera się z panelu, nie z tej kopii).
-const full = (url) =>
-	url.replace('/upload/', '/upload/w_1600,c_limit,q_auto,f_auto/');
+// Token admina z URL (?admin=...) — czytany raz, nie w komponencie, żeby nie
+// przeliczać na każdy render.
+const ADMIN_TOKEN = new URLSearchParams(window.location.search).get('admin');
 
 function isAcceptable(file) {
 	const okType = file.type.startsWith('image/');
@@ -30,25 +24,36 @@ const makeId = () =>
 		: `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
 // Upload jednego pliku z progresem (XHR, bo fetch nie daje upload.onprogress).
-function uploadToCloudinary(file, onProgress) {
+function uploadToServer(file, onProgress) {
 	return new Promise((resolve, reject) => {
 		const fd = new FormData();
 		fd.append('file', file);
-		fd.append('upload_preset', PRESET);
-		fd.append('tags', GALLERY_TAG); // tag też w presecie (belt & suspenders)
 
 		const xhr = new XMLHttpRequest();
-		xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUD}/image/upload`);
+		xhr.open('POST', API_URL);
 		xhr.upload.onprogress = (e) => {
 			if (e.lengthComputable) onProgress(e.loaded / e.total);
 		};
 		xhr.onload = () => {
+			let data;
 			try {
-				const data = JSON.parse(xhr.responseText);
-				if (xhr.status >= 200 && xhr.status < 300 && data.secure_url) resolve(data);
-				else reject(new Error(data?.error?.message || `Błąd uploadu (${xhr.status})`));
+				data = JSON.parse(xhr.responseText);
 			} catch {
-				reject(new Error('Błędna odpowiedź Cloudinary'));
+				reject(new Error('Błędna odpowiedź serwera'));
+				return;
+			}
+			if (xhr.status >= 200 && xhr.status < 300 && data.public_id) {
+				resolve(data);
+				return;
+			}
+			if (xhr.status === 409) {
+				reject(new Error('Galeria jest pełna — osiągnięto limit zdjęć.'));
+			} else if (xhr.status === 429) {
+				reject(
+					new Error('Za dużo przesłań na raz — odczekaj chwilę i spróbuj ponownie.'),
+				);
+			} else {
+				reject(new Error(data?.error || `Błąd uploadu (${xhr.status})`));
 			}
 		};
 		xhr.onerror = () => reject(new Error('Błąd sieci podczas przesyłania'));
@@ -74,11 +79,18 @@ export default function PhotoBooth() {
 			if (!res.ok) return;
 			const data = await res.json();
 			if (!Array.isArray(data)) return;
-			// Scal z optymistycznymi, dedup po public_id, najnowsze pierwsze.
+			// Bazą jest zawsze serwer (żeby usunięte zdjęcia znikały). Z poprzedniego
+			// stanu dokładamy tylko świeże optymistyczne wpisy, których serwer
+			// jeszcze nie zdążył zobaczyć (poll co 30 s) — reszta by "zmartwychwstała".
 			setPhotos((prev) => {
-				const byId = new Map();
-				[...data, ...prev].forEach((p) => byId.set(p.public_id, p));
-				return [...byId.values()].sort(
+				const known = new Set(data.map((p) => p.public_id));
+				const now = Date.now();
+				const pending = prev.filter(
+					(p) =>
+						!known.has(p.public_id) &&
+						now - new Date(p.created_at).getTime() < OPTIMISTIC_WINDOW_MS,
+				);
+				return [...data, ...pending].sort(
 					(a, b) => new Date(b.created_at) - new Date(a.created_at),
 				);
 			});
@@ -135,23 +147,15 @@ export default function PhotoBooth() {
 				{ id, name: file.name, progress: 0, status: 'uploading' },
 			]);
 			try {
-				const data = await uploadToCloudinary(file, (p) =>
+				const data = await uploadToServer(file, (p) =>
 					setQueue((q) =>
 						q.map((it) => (it.id === id ? { ...it, progress: p } : it)),
 					),
 				);
-				// Optymistyczne dodanie — wgrywający widzi zdjęcie natychmiast.
+				// Optymistyczne dodanie — odpowiedź serwera ma już wszystkie pola.
 				setPhotos((prev) => {
 					if (prev.some((p) => p.public_id === data.public_id)) return prev;
-					return [
-						{
-							id: data.public_id,
-							public_id: data.public_id,
-							url: data.secure_url,
-							created_at: data.created_at || new Date().toISOString(),
-						},
-						...prev,
-					];
+					return [data, ...prev];
 				});
 				setQueue((q) =>
 					q.map((it) =>
@@ -175,6 +179,27 @@ export default function PhotoBooth() {
 	const onInputChange = (e) => {
 		handleFiles(e.target.files);
 		e.target.value = ''; // pozwala wybrać ten sam plik ponownie
+	};
+
+	// Usuwanie zdjęcia — dostępne tylko z tokenem admina w URL (?admin=...).
+	const handleDeletePhoto = async (e, photo) => {
+		e.stopPropagation(); // nie otwieraj lightboxa
+		if (!window.confirm('Usunąć to zdjęcie?')) return;
+		try {
+			const res = await fetch(`${API_URL}/${photo.id}`, {
+				method: 'DELETE',
+				headers: { 'X-Admin-Token': ADMIN_TOKEN },
+			});
+			if (res.status === 204) {
+				setPhotos((prev) => prev.filter((p) => p.id !== photo.id));
+			} else if (res.status === 401) {
+				setErrorMsg('Błędny token administratora.');
+			} else {
+				setErrorMsg('Nie udało się usunąć zdjęcia.');
+			}
+		} catch {
+			setErrorMsg('Nie udało się usunąć zdjęcia.');
+		}
 	};
 
 	useEffect(() => {
@@ -339,14 +364,14 @@ export default function PhotoBooth() {
 								initial={{ opacity: 0, scale: 0.92 }}
 								animate={{ opacity: 1, scale: 1 }}
 								exit={{ opacity: 0, scale: 0.92 }}
-								onClick={() => setSelectedImage(photo.url)}
+								onClick={() => setSelectedImage(photo.web_url)}
 								className="group relative aspect-[3/4] overflow-hidden shadow-lb-soft border border-lb-soft/50 cursor-pointer bg-lb-warm-cream"
 							>
 								{!loadedImages.has(photo.id) && (
 									<div className="absolute inset-0 bg-gradient-to-br from-lb-soft/30 to-lb-champagne/10 animate-pulse" />
 								)}
 								<img
-									src={thumb(photo.url)}
+									src={photo.thumb_url}
 									alt="Wspomnienie weselne"
 									loading="lazy"
 									onLoad={() => setLoadedImages((prev) => new Set([...prev, photo.id]))}
@@ -354,6 +379,17 @@ export default function PhotoBooth() {
 										loadedImages.has(photo.id) ? 'opacity-100' : 'opacity-0'
 									}`}
 								/>
+								{ADMIN_TOKEN && (
+									<button
+										onClick={(e) => handleDeletePhoto(e, photo)}
+										title="Usuń zdjęcie"
+										className="absolute top-2 right-2 z-10 p-1.5 bg-lb-dark/70 text-lb-cream/80 hover:text-lb-cream hover:bg-red-500/80 transition-colors"
+									>
+										<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M4 7h16M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" />
+										</svg>
+									</button>
+								)}
 							</motion.div>
 						))}
 					</AnimatePresence>
@@ -393,7 +429,7 @@ export default function PhotoBooth() {
 								initial={{ scale: 0.9, opacity: 0 }}
 								animate={{ scale: 1, opacity: 1 }}
 								exit={{ scale: 0.9, opacity: 0 }}
-								src={full(selectedImage)}
+								src={selectedImage}
 								className="max-w-full max-h-[90vh] shadow-2xl object-contain cursor-default"
 								onClick={(e) => e.stopPropagation()}
 							/>

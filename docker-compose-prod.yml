@@ -6,15 +6,17 @@ services:
     environment:
       - PORT=3001
       - FRONTEND_URL=https://malgorzataikrzysztof.naszwielkidzien.pl
-      - GALLERY_TAG=mk2026
-      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
-      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
-      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+      - DATA_DIR=/data/photos
+      - MAX_PHOTOS=1000
+      - MAX_UPLOAD_MB=15
+      - ADMIN_TOKEN=${ADMIN_TOKEN}
+    volumes:
+      - ./photos-data:/data/photos
     networks:
       - web
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.mk-api.rule=Host(`malgorzataikrzysztof.naszwielkidzien.pl`) && PathPrefix(`/api`)'
+      - 'traefik.http.routers.mk-api.rule=Host(`malgorzataikrzysztof.naszwielkidzien.pl`) && (PathPrefix(`/api`) || PathPrefix(`/photos`))'
       - 'traefik.http.routers.mk-api.entrypoints=websecure'
       - 'traefik.http.routers.mk-api.tls.certresolver=my-resolver'
       - 'traefik.http.routers.mk-api.priority=20'
