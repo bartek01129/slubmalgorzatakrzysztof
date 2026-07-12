@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Diamond } from '../Ornaments';
@@ -8,11 +8,15 @@ const PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 const GALLERY_TAG = import.meta.env.VITE_GALLERY_TAG || 'mk2026';
 const API_URL = '/api/photos';
 const MAX_BYTES = 15 * 1024 * 1024; // 15 MB — musi ≤ limitowi w presecie Cloudinary
+const PAGE_SIZE = 40; // ile kafelków renderujemy na raz (reszta doładowuje się na scroll)
 
 // Miniatura / pełny obraz — ZAWSZE przez f_auto (naprawia HEIC z iPhone).
 const thumb = (url) =>
 	url.replace('/upload/', '/upload/w_400,h_533,c_fill,g_auto,q_auto:eco,f_auto/');
-const full = (url) => url.replace('/upload/', '/upload/q_auto,f_auto/');
+// Lightbox: cap w_1600,c_limit — tylko podgląd, oszczędza transfer i NIE rusza
+// bazy w Cloudinary (pełny oryginał pobiera się z panelu, nie z tej kopii).
+const full = (url) =>
+	url.replace('/upload/', '/upload/w_1600,c_limit,q_auto,f_auto/');
 
 function isAcceptable(file) {
 	const okType = file.type.startsWith('image/');
@@ -59,6 +63,10 @@ export default function PhotoBooth() {
 	const [errorMsg, setErrorMsg] = useState('');
 	const [selectedImage, setSelectedImage] = useState(null);
 	const [loadedImages, setLoadedImages] = useState(new Set());
+	const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+	const sentinelRef = useRef(null);
+	const photosLenRef = useRef(0);
+	photosLenRef.current = photos.length;
 
 	const fetchPhotos = useCallback(async () => {
 		try {
@@ -85,6 +93,26 @@ export default function PhotoBooth() {
 		const id = setInterval(fetchPhotos, 30_000); // poll — widać też zdjęcia innych gości
 		return () => clearInterval(id);
 	}, [fetchPhotos]);
+
+	// Doładowywanie siatki: obserwujemy „wartownika" na dole. Gdy wjeżdża w pole
+	// widzenia, pokazujemy kolejną porcję. Kafelki spoza okna nie istnieją w DOM,
+	// więc przeglądarka nie pobiera ich miniatur (oszczędza transfer i pamięć).
+	useEffect(() => {
+		const el = sentinelRef.current;
+		if (!el) return;
+		const io = new IntersectionObserver(
+			(entries) => {
+				if (entries[0].isIntersecting) {
+					setVisibleCount((c) =>
+						c < photosLenRef.current ? c + PAGE_SIZE : c,
+					);
+				}
+			},
+			{ rootMargin: '600px' },
+		);
+		io.observe(el);
+		return () => io.disconnect();
+	}, []);
 
 	const handleFiles = async (fileList) => {
 		const files = Array.from(fileList || []);
@@ -304,7 +332,7 @@ export default function PhotoBooth() {
 				{/* Siatka zdjęć */}
 				<div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
 					<AnimatePresence>
-						{photos.map((photo) => (
+						{photos.slice(0, visibleCount).map((photo) => (
 							<motion.div
 								key={photo.id}
 								layout
@@ -330,6 +358,9 @@ export default function PhotoBooth() {
 						))}
 					</AnimatePresence>
 				</div>
+
+				{/* Wartownik doładowywania — niewidoczny znacznik na dole listy */}
+				<div ref={sentinelRef} aria-hidden="true" className="h-px w-full" />
 
 				{photos.length === 0 && !busy && (
 					<div className="text-center py-20">

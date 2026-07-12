@@ -5,8 +5,7 @@ services:
     restart: unless-stopped
     environment:
       - PORT=3001
-      # ⬇️ ZMIEŃ na docelową domenę pary
-      - FRONTEND_URL=https://slubmalgorzatakrzysztof.pl
+      - FRONTEND_URL=https://malgorzataikrzysztof.naszwielkidzien.pl
       - GALLERY_TAG=mk2026
       - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
       - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
@@ -15,7 +14,7 @@ services:
       - web
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.mk-api.rule=Host(`slubmalgorzatakrzysztof.pl`) && PathPrefix(`/api`)'
+      - 'traefik.http.routers.mk-api.rule=Host(`malgorzataikrzysztof.naszwielkidzien.pl`) && PathPrefix(`/api`)'
       - 'traefik.http.routers.mk-api.entrypoints=websecure'
       - 'traefik.http.routers.mk-api.tls.certresolver=my-resolver'
       - 'traefik.http.routers.mk-api.priority=20'
@@ -33,15 +32,7 @@ services:
     labels:
       - 'traefik.enable=true'
 
-      - "traefik.http.middlewares.mk-www-redirect.redirectregex.regex=^https?://www\\.(.*)"
-      - 'traefik.http.middlewares.mk-www-redirect.redirectregex.replacement=https://$${1}'
-
-      - 'traefik.http.routers.www-mk-redirect.rule=Host(`www.slubmalgorzatakrzysztof.pl`)'
-      - 'traefik.http.routers.www-mk-redirect.entrypoints=websecure'
-      - 'traefik.http.routers.www-mk-redirect.tls.certresolver=my-resolver'
-      - 'traefik.http.routers.www-mk-redirect.middlewares=mk-www-redirect'
-
-      - 'traefik.http.routers.mk.rule=Host(`slubmalgorzatakrzysztof.pl`)'
+      - 'traefik.http.routers.mk.rule=Host(`malgorzataikrzysztof.naszwielkidzien.pl`)'
       - 'traefik.http.routers.mk.entrypoints=websecure'
       - 'traefik.http.routers.mk.tls=true'
       - 'traefik.http.routers.mk.tls.certresolver=my-resolver'

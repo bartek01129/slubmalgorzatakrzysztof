@@ -8,6 +8,7 @@ on:
       - 'backend/package.json'
       - 'backend/Dockerfile'
       - 'frontend/src/**'
+      - 'frontend/index.html'
       - 'frontend/package.json'
       - 'frontend/Dockerfile'
       - 'docker-compose-prod.yml'
@@ -33,6 +34,7 @@ jobs:
               - 'backend/Dockerfile'
             frontend:
               - 'frontend/src/**'
+              - 'frontend/index.html'
               - 'frontend/package.json'
               - 'frontend/Dockerfile'
             compose:

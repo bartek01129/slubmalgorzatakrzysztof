@@ -21,6 +21,7 @@ cloudinary.config({
 
 // Jedyne źródło prawdy to Cloudinary. Backend tylko listuje (Search API) i cache'uje.
 let cache = { at: 0, data: [] };
+let inflight = null; // wspólne pobranie dla równoległych żądań (single-flight)
 
 async function fetchFromCloudinary() {
 	const collected = [];
@@ -50,9 +51,19 @@ app.get('/health', (req, res) => res.json({ status: 'ok' }));
 // ——— GALERIA — lista zdjęć z Cloudinary (cache 25 s, paginacja next_cursor) ———
 app.get('/api/photos', async (req, res) => {
 	try {
-		const now = Date.now();
-		if (now - cache.at > CACHE_TTL_MS) {
-			cache = { at: now, data: await fetchFromCloudinary() };
+		if (Date.now() - cache.at > CACHE_TTL_MS) {
+			// Single-flight: przy nagłym napływie gości (np. zaraz po ceremonii)
+			// leci JEDNO pobranie do Cloudinary — reszta czeka na tę samą obietnicę.
+			if (!inflight) {
+				inflight = fetchFromCloudinary()
+					.then((data) => {
+						cache = { at: Date.now(), data };
+					})
+					.finally(() => {
+						inflight = null;
+					});
+			}
+			await inflight;
 		}
 		// Bez cache przeglądarki — świeżość ma zapewnić poll; obciążenie Cloudinary
 		// chroni już nasz 25 s cache w pamięci (wyżej).
