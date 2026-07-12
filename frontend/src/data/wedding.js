@@ -23,6 +23,13 @@ export const place = {
 	country: 'Hiszpania',
 };
 
+// ——— MUZYKA ———
+// Utwór w tle serwowany przez ukryty odtwarzacz YouTube (licencja po stronie YT).
+// youtubeId = fragment z linku youtu.be/<ID>. Zmiana piosenki = zmiana tego ID.
+export const music = {
+	youtubeId: 'u2ah9tWTkmk',
+};
+
 // ——— HARMONOGRAM (dwa dni) ———
 // isTransfer: true → punkt oznaczony jako transfer/autobus (klientka o to prosiła).
 export const timelineWedding = [

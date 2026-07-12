@@ -19,6 +19,7 @@ import Podziekowanie from './components/Podziekowanie';
 import Footer from './components/Footer';
 import PasswordProtection from './components/PasswordProtection';
 import PhotoBooth from './components/page/PhotoBooth';
+import { MusicProvider } from './components/MusicPlayer';
 import { Diamond } from './components/Ornaments';
 import './App.css';
 
@@ -68,50 +69,52 @@ export default function App() {
 
 	return (
 		<Router>
-			<main className='min-h-screen bg-lb-cream text-lb-text overflow-x-hidden'>
-				<ScrollToTopButton />
+			<MusicProvider>
+				<main className='min-h-screen bg-lb-cream text-lb-text overflow-x-hidden'>
+					<ScrollToTopButton />
 
-				<Routes>
-					{/* Strona główna */}
-					<Route
-						path='/'
-						element={
-							!isAuthenticated ? (
-								<PasswordProtection onSuccess={handleAuthSuccess} />
-							) : (
-								<>
-									<Hero />
-									<Countdown />
-									<Welcome />
-									<GalleryCTA />
-									<Flights />
-									<Agenda />
-									<DressCode />
-									<Map />
-									<Gifts />
-									<Podziekowanie />
-									<Footer />
-								</>
-							)
-						}
-					/>
+					<Routes>
+						{/* Strona główna */}
+						<Route
+							path='/'
+							element={
+								!isAuthenticated ? (
+									<PasswordProtection onSuccess={handleAuthSuccess} />
+								) : (
+									<>
+										<Hero />
+										<Countdown />
+										<Welcome />
+										<GalleryCTA />
+										<Flights />
+										<Agenda />
+										<DressCode />
+										<Map />
+										<Gifts />
+										<Podziekowanie />
+										<Footer />
+									</>
+								)
+							}
+						/>
 
-					{/* Galeria */}
-					<Route
-						path='/galeria'
-						element={
-							isAuthenticated ? (
-								<PhotoBooth />
-							) : (
-								<PasswordProtection onSuccess={handleAuthSuccess} />
-							)
-						}
-					/>
+						{/* Galeria */}
+						<Route
+							path='/galeria'
+							element={
+								isAuthenticated ? (
+									<PhotoBooth />
+								) : (
+									<PasswordProtection onSuccess={handleAuthSuccess} />
+								)
+							}
+						/>
 
-					{/* Błędne adresy → główna */}
-					<Route path='*' element={<Navigate to='/' />} />
-				</Routes>
-			</main>
+						{/* Błędne adresy → główna */}
+						<Route path='*' element={<Navigate to='/' />} />
+					</Routes>
+				</main>
+			</MusicProvider>
 		</Router>
 	);
 }

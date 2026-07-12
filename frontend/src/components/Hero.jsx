@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArtDecoRule, Diamond, decoWeaveStyle } from './Ornaments';
 import { couple, dates, place } from '../data/wedding';
+import { useMusic } from './MusicPlayer';
 import heroCouple from '../assets/hero-couple.jpg';
 
 const container = {
@@ -23,6 +24,98 @@ const item = {
 function CornerMark({ className }) {
 	return (
 		<span className={`absolute w-8 h-8 border-lb-champagne/40 ${className}`} />
+	);
+}
+
+// Ruchomy „equalizer" — 4 słupki pulsujące, gdy muzyka gra.
+function Equalizer() {
+	const bars = [0, 0.15, 0.3, 0.45];
+	return (
+		<span className='flex items-end justify-center gap-[2px] h-3.5'>
+			{bars.map((delay, i) => (
+				<motion.span
+					key={i}
+					className='w-[2px] bg-lb-champagne rounded-full'
+					animate={{ height: ['30%', '100%', '45%', '85%', '30%'] }}
+					transition={{
+						duration: 1.1,
+						repeat: Infinity,
+						ease: 'easeInOut',
+						delay,
+					}}
+					style={{ height: '30%' }}
+				/>
+			))}
+		</span>
+	);
+}
+
+// Przycisk włącz/pauza muzyki w Hero. Steruje ukrytym playerem YouTube.
+// Cisza → kółko z nutką. Odtwarzanie → animowany equalizer.
+function MusicToggle() {
+	const music = useMusic();
+	if (!music) return null;
+
+	const { isReady, isPlaying, toggle } = music;
+	const label = isPlaying ? 'Zatrzymaj muzykę' : 'Włącz muzykę';
+
+	return (
+		<motion.button
+			type='button'
+			onClick={toggle}
+			disabled={!isReady}
+			aria-pressed={isPlaying}
+			aria-label={label}
+			title={label}
+			className='inline-flex items-center justify-center w-12 h-12 rounded-full text-lb-champagne backdrop-blur-sm transition-all duration-300 disabled:opacity-40 disabled:cursor-default hover:text-white'
+			style={{
+				background: 'rgba(38,32,26,0.35)',
+				border: '1px solid rgba(196,169,109,0.45)',
+			}}
+			whileHover={isReady ? { scale: 1.08 } : undefined}
+			whileTap={isReady ? { scale: 0.94 } : undefined}
+		>
+			{isPlaying ? (
+				<Equalizer />
+			) : (
+				// Elegancka para nut z podwójną belką — motyw art-deco.
+				<svg
+					width='24'
+					height='24'
+					viewBox='0 0 24 24'
+					fill='none'
+					stroke='currentColor'
+					strokeLinecap='round'
+					strokeLinejoin='round'
+				>
+					{/* laski nut */}
+					<path d='M8 16.2V6' strokeWidth='1.5' />
+					<path d='M18.4 13.6V3.4' strokeWidth='1.5' />
+					{/* podwójna belka — nuta „kunsztu" */}
+					<path d='M8 6L18.4 3.4' strokeWidth='2.2' />
+					<path d='M8 8.5L18.4 5.9' strokeWidth='1.3' opacity='0.85' />
+					{/* główki nut */}
+					<ellipse
+						cx='5.5'
+						cy='16.2'
+						rx='2.9'
+						ry='2.3'
+						transform='rotate(-22 5.5 16.2)'
+						fill='currentColor'
+						stroke='none'
+					/>
+					<ellipse
+						cx='15.9'
+						cy='13.6'
+						rx='2.9'
+						ry='2.3'
+						transform='rotate(-22 15.9 13.6)'
+						fill='currentColor'
+						stroke='none'
+					/>
+				</svg>
+			)}
+		</motion.button>
 	);
 }
 
@@ -194,35 +287,14 @@ export default function Hero() {
 					</Link>
 				</motion.div>
 
-				<motion.div variants={item} className='mt-14'>
+				<motion.div variants={item} className='mt-8'>
+					<MusicToggle />
+				</motion.div>
+
+				<motion.div variants={item} className='mt-12'>
 					<ArtDecoRule className='text-white/45 mx-auto rotate-180' />
 				</motion.div>
 			</motion.div>
-
-			{/* Wskaźnik przewijania — wyśrodkowany przez flex, aby animacja y nie nadpisała translate-x */}
-			<div className='absolute inset-x-0 bottom-6 z-10 flex justify-center pointer-events-none'>
-				<motion.div
-					className='flex flex-col items-center gap-2 text-lb-champagne/70'
-					animate={{ y: [0, 8, 0] }}
-					transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-				>
-					<span className='text-[9px] uppercase tracking-[0.4em]'>Przewiń</span>
-					<svg
-						width='16'
-						height='16'
-						viewBox='0 0 24 24'
-						fill='none'
-						stroke='currentColor'
-					>
-						<path
-							strokeLinecap='round'
-							strokeLinejoin='round'
-							strokeWidth={1.5}
-							d='M19 9l-7 7-7-7'
-						/>
-					</svg>
-				</motion.div>
-			</div>
 		</section>
 	);
 }
