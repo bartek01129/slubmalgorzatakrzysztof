@@ -1,0 +1,8 @@
+# Lokalne node_modules (windowsowe binarki sharpa) nie mogą nadpisać
+# tych zainstalowanych w obrazie przez npm ci (linuxmusl).
+node_modules
+
+# Sekrety i dane lokalne nie wchodzą do obrazu.
+.env
+data
+data-*
