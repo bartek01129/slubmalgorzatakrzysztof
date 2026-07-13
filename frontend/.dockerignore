@@ -1,0 +1,7 @@
+# CI robi `npm ci` przed builderem obrazu — bez tego pliku jego node_modules
+# trafiłyby do kontekstu budowania (setki MB) i nadpisały te z warstwy Dockera.
+node_modules
+
+# Artefakty lokalnego builda i sekrety — obraz buduje dist u siebie.
+dist
+.env

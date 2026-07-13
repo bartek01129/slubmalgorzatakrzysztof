@@ -5,10 +5,7 @@ on:
     branches: [main]
     paths:
       - 'backend/**'
-      - 'frontend/src/**'
-      - 'frontend/index.html'
-      - 'frontend/package.json'
-      - 'frontend/Dockerfile'
+      - 'frontend/**'
       - 'docker-compose-prod.yml'
       - '.github/workflows/publish.yml'
 
@@ -29,10 +26,7 @@ jobs:
             backend:
               - 'backend/**'
             frontend:
-              - 'frontend/src/**'
-              - 'frontend/index.html'
-              - 'frontend/package.json'
-              - 'frontend/Dockerfile'
+              - 'frontend/**'
             compose:
               - 'docker-compose-prod.yml'
 

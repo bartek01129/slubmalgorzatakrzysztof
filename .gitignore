@@ -25,5 +25,6 @@ Thumbs.db
 *.log
 npm-debug.log*
 
-# Local dev photo storage
+# Local dev photo storage (zdjęcia gości nigdy nie trafiają do repo)
 backend/data/
+backend/data-*/

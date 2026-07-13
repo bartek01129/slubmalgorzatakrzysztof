@@ -12,10 +12,57 @@ const OPTIMISTIC_WINDOW_MS = 60_000; // ile trzymamy optymistyczny wpis, zanim p
 // przeliczać na każdy render.
 const ADMIN_TOKEN = new URLSearchParams(window.location.search).get('admin');
 
-function isAcceptable(file) {
+function isImage(file) {
 	const okType = file.type.startsWith('image/');
 	const okHeic = /\.(heic|heif)$/i.test(file.name); // iPhone bywa bez file.type
-	return (okType || okHeic) && file.size <= MAX_BYTES;
+	return okType || okHeic;
+}
+
+// Pliki ponad limit zmniejszamy w przeglądarce (canvas → JPEG) zamiast odrzucać —
+// gość ma się nie przejmować limitami, a serwer i tak robi z tego wersję 1600px,
+// więc strata jakości względem oryginału nie jest widoczna w galerii.
+// Kolejne próby: coraz mniejszy bok i niższa jakość, aż plik zmieści się w limicie.
+// Ostatni krok (1600 px) = dokładnie to, co serwuje galeria, więc nic nie tracimy.
+const SHRINK_STEPS = [
+	{ maxPx: 3500, quality: 0.85 },
+	{ maxPx: 2600, quality: 0.8 },
+	{ maxPx: 2000, quality: 0.75 },
+	{ maxPx: 1600, quality: 0.7 },
+	{ maxPx: 1600, quality: 0.5 },
+];
+const SHRINK_TARGET_BYTES = 14 * 1024 * 1024; // zapas pod limit serwera (15 MB)
+
+async function shrinkImage(file) {
+	// createImageBitmap wypala orientację EXIF w pikselach, więc serwerowy
+	// .rotate() nie ma już czego obracać. Na HEIC poza iOS rzuci wyjątkiem —
+	// wtedy plik odrzucamy (obsługa w handleFiles).
+	const bitmap = await createImageBitmap(file);
+	const canvas = document.createElement('canvas');
+	const ctx = canvas.getContext('2d');
+	const longest = Math.max(bitmap.width, bitmap.height);
+
+	try {
+		let last = null;
+		for (const { maxPx, quality } of SHRINK_STEPS) {
+			const scale = Math.min(1, maxPx / longest);
+			canvas.width = Math.round(bitmap.width * scale);
+			canvas.height = Math.round(bitmap.height * scale);
+			ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+			const blob = await new Promise((resolve) =>
+				canvas.toBlob(resolve, 'image/jpeg', quality),
+			);
+			if (!blob) throw new Error('Nie udało się przetworzyć zdjęcia.');
+			last = blob;
+			if (blob.size <= SHRINK_TARGET_BYTES) break;
+		}
+		if (!last || last.size > MAX_BYTES)
+			throw new Error('Nie udało się zmniejszyć zdjęcia pod limit.');
+		return new File([last], file.name.replace(/\.\w+$/, '') + '.jpg', {
+			type: 'image/jpeg',
+		});
+	} finally {
+		bitmap.close();
+	}
 }
 
 const makeId = () =>
@@ -66,7 +113,9 @@ export default function PhotoBooth() {
 	const [photos, setPhotos] = useState([]);
 	const [queue, setQueue] = useState([]); // [{ id, name, progress, status }]
 	const [errorMsg, setErrorMsg] = useState('');
-	const [selectedImage, setSelectedImage] = useState(null);
+	// Lightbox trzyma id (nie URL) — zna pozycję w siatce, więc można nawigować
+	// strzałkami, a usunięcie zdjęcia przez admina samo zamyka podgląd.
+	const [selectedId, setSelectedId] = useState(null);
 	const [loadedImages, setLoadedImages] = useState(new Set());
 	const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 	const sentinelRef = useRef(null);
@@ -133,14 +182,24 @@ export default function PhotoBooth() {
 		// Sprzątamy zakończone wpisy z poprzedniej partii.
 		setQueue((q) => q.filter((it) => it.status === 'uploading'));
 
-		const accepted = files.filter(isAcceptable);
+		const accepted = files.filter(isImage);
 		const rejected = files.length - accepted.length;
 		if (rejected > 0)
-			setErrorMsg(
-				`Pominięto ${rejected} plik(ów) — dozwolone są zdjęcia do 15 MB.`,
-			);
+			setErrorMsg(`Pominięto ${rejected} plik(ów) — to nie są zdjęcia.`);
 
-		for (const file of accepted) {
+		for (let file of accepted) {
+			// Za duże pliki zmniejszamy na miejscu; odrzucamy dopiero gdy
+			// przeglądarka nie umie ich zdekodować (np. HEIC poza iPhone'em).
+			if (file.size > MAX_BYTES) {
+				try {
+					file = await shrinkImage(file);
+				} catch {
+					setErrorMsg(
+						`Pominięto „${file.name}" — plik jest za duży i nie udało się go zmniejszyć.`,
+					);
+					continue;
+				}
+			}
 			const id = makeId();
 			setQueue((q) => [
 				...q,
@@ -202,19 +261,31 @@ export default function PhotoBooth() {
 		}
 	};
 
+	const selectedIndex = photos.findIndex((p) => p.id === selectedId);
+	const selectedPhoto = selectedIndex === -1 ? null : photos[selectedIndex];
+	const goPrev = () =>
+		selectedIndex > 0 && setSelectedId(photos[selectedIndex - 1].id);
+	const goNext = () =>
+		selectedIndex !== -1 &&
+		selectedIndex < photos.length - 1 &&
+		setSelectedId(photos[selectedIndex + 1].id);
+
 	useEffect(() => {
-		const handleEsc = (e) => {
-			if (e.key === 'Escape') setSelectedImage(null);
+		if (selectedIndex === -1) return;
+		const handleKey = (e) => {
+			if (e.key === 'Escape') setSelectedId(null);
+			else if (e.key === 'ArrowLeft' && selectedIndex > 0)
+				setSelectedId(photos[selectedIndex - 1].id);
+			else if (e.key === 'ArrowRight' && selectedIndex < photos.length - 1)
+				setSelectedId(photos[selectedIndex + 1].id);
 		};
-		if (selectedImage) {
-			window.addEventListener('keydown', handleEsc);
-			document.body.style.overflow = 'hidden';
-		}
+		window.addEventListener('keydown', handleKey);
+		document.body.style.overflow = 'hidden';
 		return () => {
-			window.removeEventListener('keydown', handleEsc);
+			window.removeEventListener('keydown', handleKey);
 			document.body.style.overflow = 'unset';
 		};
-	}, [selectedImage]);
+	}, [selectedIndex, photos]);
 
 	const busy = queue.some((it) => it.status === 'uploading');
 
@@ -364,7 +435,7 @@ export default function PhotoBooth() {
 								initial={{ opacity: 0, scale: 0.92 }}
 								animate={{ opacity: 1, scale: 1 }}
 								exit={{ opacity: 0, scale: 0.92 }}
-								onClick={() => setSelectedImage(photo.web_url)}
+								onClick={() => setSelectedId(photo.id)}
 								className="group relative aspect-[3/4] overflow-hidden shadow-lb-soft border border-lb-soft/50 cursor-pointer bg-lb-warm-cream"
 							>
 								{!loadedImages.has(photo.id) && (
@@ -408,16 +479,16 @@ export default function PhotoBooth() {
 
 				{/* Lightbox */}
 				<AnimatePresence>
-					{selectedImage && (
+					{selectedPhoto && (
 						<motion.div
 							initial={{ opacity: 0 }}
 							animate={{ opacity: 1 }}
 							exit={{ opacity: 0 }}
-							onClick={() => setSelectedImage(null)}
+							onClick={() => setSelectedId(null)}
 							className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 cursor-zoom-out"
 						>
 							<button
-								onClick={() => setSelectedImage(null)}
+								onClick={() => setSelectedId(null)}
 								className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors z-[110]"
 								title="Zamknij (Esc)"
 							>
@@ -425,11 +496,44 @@ export default function PhotoBooth() {
 									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M6 18L18 6M6 6l12 12" />
 								</svg>
 							</button>
+
+							{/* Strzałki nawigacji — działają też z klawiatury (← / →) */}
+							{selectedIndex > 0 && (
+								<button
+									onClick={(e) => {
+										e.stopPropagation();
+										goPrev();
+									}}
+									className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 p-2 text-white/70 hover:text-white transition-colors z-[110]"
+									title="Poprzednie zdjęcie (←)"
+								>
+									<svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 19l-7-7 7-7" />
+									</svg>
+								</button>
+							)}
+							{selectedIndex < photos.length - 1 && (
+								<button
+									onClick={(e) => {
+										e.stopPropagation();
+										goNext();
+									}}
+									className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 p-2 text-white/70 hover:text-white transition-colors z-[110]"
+									title="Następne zdjęcie (→)"
+								>
+									<svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 5l7 7-7 7" />
+									</svg>
+								</button>
+							)}
+
+							{/* key = id → zmiana zdjęcia strzałką dostaje animację wejścia */}
 							<motion.img
+								key={selectedPhoto.id}
 								initial={{ scale: 0.9, opacity: 0 }}
 								animate={{ scale: 1, opacity: 1 }}
 								exit={{ scale: 0.9, opacity: 0 }}
-								src={selectedImage}
+								src={selectedPhoto.web_url}
 								className="max-w-full max-h-[90vh] shadow-2xl object-contain cursor-default"
 								onClick={(e) => e.stopPropagation()}
 							/>
